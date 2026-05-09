@@ -1,34 +1,46 @@
-Author: 4lbH4cker
-### Version 4
+# NetChain — ALHacking Network Recon + Vuln Analysis Tool
 
-(![image](https://raw.githubusercontent.com/4lbH4cker/ALHacking/main/alhacking.png)
+A terminal pipeline for Kali Linux that chains:
 
-# Hacking Tools
-Tools to help you with ethical hacking, Social media hack, phone info, Gmail attack, phone number attack, user discovery, Webcam Hack
+```
+Host Discovery (nmap) → Port/Service Scan → CVE Lookup (NVD) → Exploit Correlation (ExploitDB)
+```
 
-• Powerful DDOS attack tool!!
+## Install
 
-Youtube Video: https://www.youtube.com/watch?v=zgdq6ErscqY
-# Operating System Requirements
-works on any of the following operating systems:
+```bash
+sudo bash setup.sh
+```
 
-• Android (Using the Termux App)
+## Usage
 
-• Linux (Debian Based Systems)
+```bash
+# Basic scan of a subnet
+sudo netchian scan -t 192.168.1.0/24
 
-• Unix
+# Aggressive scan, only show HIGH/CRITICAL (CVSS >= 7.0), save JSON
+sudo netchian scan -t 10.0.0.1-50 --intensity aggressive --max-cvss 7.0 --save report.json
 
-# How to Install
-* Open the terminal and type `<pkg install git>`
-* Then`<git clone https://github.com/4lbH4cker/ALHacking>`
-* `<cd ALHacking>`
-* `<bash alhack.sh>`
+# Stealth SYN scan, markdown output
+sudo netchian scan -t 192.168.0.5 --intensity stealth --output markdown
 
+# Skip exploit lookup (faster)
+sudo netchian scan -t 172.16.0.0/24 --no-exploits
+```
 
-# Warning
+## Flags
 
-We are not responsible for any misuse or damage caused by this program. Use this tool at your own risk!
+| Flag | Default | Description |
+|---|---|---|
+| `-t, --target` | (required) | IP, range, or CIDR |
+| `--intensity` | `default` | `stealth` / `default` / `aggressive` |
+| `--max-cvss` | `0.0` | Only show CVEs ≥ this CVSS score |
+| `-o, --output` | `table` | `table` / `json` / `markdown` |
+| `--save` | (none) | Path to save report file |
+| `--no-exploits` | false | Skip ExploitDB correlation |
 
+## Notes
 
-❤️ Support me:
-https://www.paypal.me/Relvllahi
+- Requires root for SYN scan (`stealth`/`aggressive` modes)
+- Add an NVD API key in `configs/config.yaml` to increase API rate limits
+- Ensure `exploitdb` is installed: `sudo apt install exploitdb`
