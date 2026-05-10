@@ -1,6 +1,6 @@
 # NetChain — ALHacking Network Recon + Vuln Analysis Tool
 
-A terminal pipeline for Kali Linux that chains:
+A terminal pipeline for Kali Linux and Fedora that chains:
 
 ```
 Host Discovery (nmap) → Port/Service Scan → CVE Lookup (NVD) → Exploit Correlation (ExploitDB)

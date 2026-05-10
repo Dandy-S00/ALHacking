@@ -25,7 +25,7 @@ banner() {
   echo ' |_| \_|\___|_|\____|_| |_|\__,_|_|_| |_|'
   echo -e "${NC}"
   echo -e "${YELLOW}  ALHacking :: Network Recon + Vuln Chain Tool${NC}"
-  echo -e "${YELLOW}  Kali Linux | Go 1.22+ | Jules-Ready${NC}"
+  echo -e "${YELLOW}  Kali/Fedora | Go 1.22+ | Jules-Ready${NC}"
   echo ""
 }
 
@@ -46,20 +46,33 @@ check_root() {
 
 # ─── System Dependencies ──────────────────────────────────────────────────────
 install_system_deps() {
-  info "Updating package lists..."
-  apt-get update -qq
-
-  info "Installing system dependencies..."
-  apt-get install -y -qq \
-    nmap \
-    golang-go \
-    git \
-    curl \
-    jq \
-    libpcap-dev \
-    build-essential \
-    exploitdb \
-    || die "Failed to install system packages. Check your apt sources."
+  if [[ -f /etc/fedora-release ]]; then
+    info "Fedora detected. Using dnf..."
+    dnf install -y -q \
+      nmap \
+      golang \
+      git \
+      curl \
+      jq \
+      libpcap-devel \
+      gcc gcc-c++ make \
+      || warn "Failed to install some packages via dnf. You may need to install exploitdb manually."
+  elif command -v apt-get &>/dev/null; then
+    info "Debian-based system detected. Using apt..."
+    apt-get update -qq
+    apt-get install -y -qq \
+      nmap \
+      golang-go \
+      git \
+      curl \
+      jq \
+      libpcap-dev \
+      build-essential \
+      exploitdb \
+      || die "Failed to install system packages. Check your apt sources."
+  else
+    die "Unsupported distribution. Please install nmap, go, git, curl, jq, libpcap-dev, and build-essential manually."
+  fi
 
   log "System dependencies installed."
 }
