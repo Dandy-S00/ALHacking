@@ -45,13 +45,36 @@ type ChainReport struct {
 	Hosts     []HostReport
 }
 
+// cachedResults stores CVE and exploit data to avoid redundant network/process calls.
+type cachedResults struct {
+	CVEs     []vulndb.CVE
+	Exploits []exploits.Exploit
+}
+
 // RunChain executes the full discovery → CVE → exploit chain.
 func RunChain(cfg ScanConfig) error {
+	return runChainInternal(cfg,
+		scanner.Discover,
+		vulndb.LookupByCPE,
+		vulndb.LookupByKeyword,
+		exploits.SearchByProduct,
+		time.Sleep,
+	)
+}
+
+func runChainInternal(
+	cfg ScanConfig,
+	discover func(scanner.ScanOptions) ([]scanner.Host, error),
+	lookupCPE func(string, float64, string) ([]vulndb.CVE, error),
+	lookupKeyword func(string, string, float64, string) ([]vulndb.CVE, error),
+	searchExploits func(string, string) ([]exploits.Exploit, error),
+	sleep func(time.Duration),
+) error {
 	printBanner(cfg)
 	startTime := time.Now()
 
 	// ── Phase 1: Network Discovery ──────────────────────────────────────────
-	hosts, err := scanner.Discover(scanner.ScanOptions{
+	hosts, err := discover(scanner.ScanOptions{
 		Target:    cfg.Target,
 		Intensity: cfg.Intensity,
 	})
@@ -72,6 +95,9 @@ func RunChain(cfg ScanConfig) error {
 		StartedAt: startTime.Format(time.RFC3339),
 	}
 
+	// In-memory cache for lookups to skip redundant API calls and sleep times
+	cache := make(map[string]cachedResults)
+
 	for _, host := range hosts {
 		hr := HostReport{
 			Host:    host,
@@ -86,24 +112,48 @@ func RunChain(cfg ScanConfig) error {
 				continue
 			}
 
+			// Cache key based on service identity
+			cacheKey := fmt.Sprintf("%s:%s:%s", svc.Product, svc.Version, strings.Join(svc.CPE, ","))
+
 			color.White("  → %s [%s %s]...", key, svc.Product, svc.Version)
 
-			// CVE lookup: try CPE first, fallback to keyword
-			var cves []vulndb.CVE
-			for _, cpe := range svc.CPE {
-				cves, err = vulndb.LookupByCPE(cpe, cfg.MinCVSS, cfg.NVDKey)
-				if err == nil && len(cves) > 0 {
-					break
+			if cached, found := cache[cacheKey]; found {
+				color.Cyan(" (cached)")
+				sv.CVEs = cached.CVEs
+				sv.Exploits = cached.Exploits
+			} else {
+				// CVE lookup: try CPE first, fallback to keyword
+				var cves []vulndb.CVE
+				for _, cpe := range svc.CPE {
+					cves, err = lookupCPE(cpe, cfg.MinCVSS, cfg.NVDKey)
+					if err == nil && len(cves) > 0 {
+						break
+					}
 				}
-			}
-			if len(cves) == 0 {
-				cves, _ = vulndb.LookupByKeyword(svc.Product, svc.Version, cfg.MinCVSS, cfg.NVDKey)
-			}
-			sv.CVEs = cves
+				if len(cves) == 0 {
+					cves, _ = lookupKeyword(svc.Product, svc.Version, cfg.MinCVSS, cfg.NVDKey)
+				}
+				sv.CVEs = cves
 
-			// Phase 3: Exploit correlation
-			if !cfg.SkipExploits && (svc.Product != "") {
-				sv.Exploits, _ = exploits.SearchByProduct(svc.Product, svc.Version)
+				// Phase 3: Exploit correlation
+				if !cfg.SkipExploits && (svc.Product != "") {
+					sv.Exploits, _ = searchExploits(svc.Product, svc.Version)
+				}
+
+				// Update cache
+				cache[cacheKey] = cachedResults{
+					CVEs:     sv.CVEs,
+					Exploits: sv.Exploits,
+				}
+
+				// Rate-limit NVD API only on actual network calls
+				// Free tier: 5 req/30s without API key (~6s)
+				// With API key: 50 req/30s (~0.6s)
+				if cfg.NVDKey != "" {
+					sleep(600 * time.Millisecond)
+				} else {
+					sleep(6 * time.Second)
+				}
 			}
 
 			vulnCount := len(sv.CVEs)
@@ -112,15 +162,6 @@ func RunChain(cfg ScanConfig) error {
 				color.Red(" %d CVE(s) | %d exploit(s)\n", vulnCount, exploitCount)
 			} else {
 				color.Green(" clean\n")
-			}
-
-			// Rate-limit NVD API
-			// Free tier: 5 req/30s without API key (~6s)
-			// With API key: 50 req/30s (~0.6s)
-			if cfg.NVDKey != "" {
-				time.Sleep(600 * time.Millisecond)
-			} else {
-				time.Sleep(6 * time.Second)
 			}
 
 			hr.VulnMap[key] = sv
