@@ -1,0 +1,3 @@
+## 2025-05-15 - Redundant NVD lookups in multi-host environments
+**Learning:** In network reconnaissance tools, many hosts often run identical services (same product/version). Sequentially looking up vulnerabilities for each instance and applying a mandatory rate-limit sleep (e.g., 6s) results in O(services) time complexity, which is highly inefficient.
+**Action:** Implement in-memory caching for vulnerability and exploit lookups. By using service identity (product, version, CPE) as a cache key, redundant network calls and rate-limit delays can be skipped, reducing the time complexity towards O(unique_services).
