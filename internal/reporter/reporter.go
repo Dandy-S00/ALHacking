@@ -81,6 +81,7 @@ func RunChain(cfg ScanConfig) error {
 		for _, svc := range host.Services {
 			key := fmt.Sprintf("%d/%s", svc.Port, svc.Protocol)
 			sv := ServiceVulns{Service: svc}
+			hr.VulnMap[key] = sv
 
 			if svc.Product == "" {
 				continue
@@ -102,7 +103,7 @@ func RunChain(cfg ScanConfig) error {
 			sv.CVEs = cves
 
 			// Phase 3: Exploit correlation
-			if !cfg.SkipExploits && (svc.Product != "") {
+			if !cfg.SkipExploits {
 				sv.Exploits, _ = exploits.SearchByProduct(svc.Product, svc.Version)
 			}
 
@@ -142,8 +143,27 @@ func RunChain(cfg ScanConfig) error {
 		}
 	}
 
-	color.Cyan("\nCompleted in %s\n", time.Since(startTime).Round(time.Second))
+	printSummary(report, time.Since(startTime))
 	return nil
+}
+
+func printSummary(report ChainReport, duration time.Duration) {
+	totalCVEs := 0
+	totalExploits := 0
+	for _, hr := range report.Hosts {
+		for _, sv := range hr.VulnMap {
+			totalCVEs += len(sv.CVEs)
+			totalExploits += len(sv.Exploits)
+		}
+	}
+
+	color.Cyan("\n══════════════════════════════════════════════════════")
+	color.Cyan("  SCAN SUMMARY")
+	color.Cyan("  Hosts Scanned : %d", len(report.Hosts))
+	color.Cyan("  Vulnerabilities: %d CVEs found", totalCVEs)
+	color.Cyan("  Exploits Found : %d total exploits matched", totalExploits)
+	color.Cyan("  Total Time    : %s", duration.Round(time.Second))
+	color.Cyan("══════════════════════════════════════════════════════\n")
 }
 
 // ─── Table Output ─────────────────────────────────────────────────────────────
@@ -160,15 +180,15 @@ func printTable(report ChainReport) {
 		}
 		color.New(color.FgCyan, color.Bold).Printf("┌─ HOST: %s", label)
 		if h.OS != "" {
-			color.CyanString(" | OS: %s", h.OS)
-			fmt.Printf("  OS: %s", h.OS)
+			color.New(color.FgCyan, color.Bold).Printf(" | OS: %s", h.OS)
 		}
 		fmt.Println()
 
 		for _, sv := range hr.VulnMap {
 			svc := sv.Service
 			svcLabel := fmt.Sprintf("  %d/%s  %s %s", svc.Port, svc.Protocol, svc.Product, svc.Version)
-			color.New(color.FgWhite, color.Bold).Println(svcLabel)
+			svcLabel = strings.TrimSpace(svcLabel)
+			color.New(color.FgWhite, color.Bold).Printf("  %s\n", svcLabel)
 
 			if len(sv.CVEs) > 0 {
 				tbl := table.New("  CVE ID", "CVSS", "Published", "Description")
