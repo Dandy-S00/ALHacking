@@ -142,6 +142,7 @@ func RunChain(cfg ScanConfig) error {
 		}
 	}
 
+	printSummary(report)
 	color.Cyan("\nCompleted in %s\n", time.Since(startTime).Round(time.Second))
 	return nil
 }
@@ -302,4 +303,26 @@ func printBanner(cfg ScanConfig) {
 	color.Cyan("  Mode   : %s", cfg.Intensity)
 	color.Cyan("  MinCVSS: %.1f  |  ExploitDB: %v", cfg.MinCVSS, !cfg.SkipExploits)
 	color.Cyan("══════════════════════════════════════════════════════\n")
+}
+
+// printSummary displays a high-level overview of findings.
+func printSummary(report ChainReport) {
+	var totalHosts, totalServices, totalCVEs, totalExploits int
+	totalHosts = len(report.Hosts)
+
+	for _, hr := range report.Hosts {
+		totalServices += len(hr.VulnMap)
+		for _, sv := range hr.VulnMap {
+			totalCVEs += len(sv.CVEs)
+			totalExploits += len(sv.Exploits)
+		}
+	}
+
+	color.Cyan("\n══════════════════════════════════════════════════════")
+	color.Cyan("  SCAN SUMMARY")
+	color.Cyan("  Hosts Discovered : %d", totalHosts)
+	color.Cyan("  Services Scanned : %d", totalServices)
+	color.Cyan("  CVEs Found       : %d", totalCVEs)
+	color.Cyan("  Exploits Matched : %d", totalExploits)
+	color.Cyan("══════════════════════════════════════════════════════")
 }
