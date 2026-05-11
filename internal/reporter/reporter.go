@@ -72,6 +72,10 @@ func RunChain(cfg ScanConfig) error {
 		StartedAt: startTime.Format(time.RFC3339),
 	}
 
+	// Cache to skip redundant lookups for the same service across different hosts/ports.
+	// Key: product|version|cpe1,cpe2...
+	cache := make(map[string]ServiceVulns)
+
 	for _, host := range hosts {
 		hr := HostReport{
 			Host:    host,
@@ -79,31 +83,53 @@ func RunChain(cfg ScanConfig) error {
 		}
 
 		for _, svc := range host.Services {
-			key := fmt.Sprintf("%d/%s", svc.Port, svc.Protocol)
-			sv := ServiceVulns{Service: svc}
-
+			portKey := fmt.Sprintf("%d/%s", svc.Port, svc.Protocol)
 			if svc.Product == "" {
 				continue
 			}
 
-			color.White("  → %s [%s %s]...", key, svc.Product, svc.Version)
+			// Generate a cache key for the service identity
+			cacheKey := fmt.Sprintf("%s|%s|%s", svc.Product, svc.Version, strings.Join(svc.CPE, ","))
 
-			// CVE lookup: try CPE first, fallback to keyword
-			var cves []vulndb.CVE
-			for _, cpe := range svc.CPE {
-				cves, err = vulndb.LookupByCPE(cpe, cfg.MinCVSS, cfg.NVDKey)
-				if err == nil && len(cves) > 0 {
-					break
+			var sv ServiceVulns
+			if cached, ok := cache[cacheKey]; ok {
+				sv = cached
+				// Use the current service metadata but keep cached CVEs/exploits
+				sv.Service = svc
+				color.White("  → %s [%s %s]... (cached)", portKey, svc.Product, svc.Version)
+			} else {
+				sv = ServiceVulns{Service: svc}
+				color.White("  → %s [%s %s]...", portKey, svc.Product, svc.Version)
+
+				// CVE lookup: try CPE first, fallback to keyword
+				var cves []vulndb.CVE
+				for _, cpe := range svc.CPE {
+					cves, err = vulndb.LookupByCPE(cpe, cfg.MinCVSS, cfg.NVDKey)
+					if err == nil && len(cves) > 0 {
+						break
+					}
 				}
-			}
-			if len(cves) == 0 {
-				cves, _ = vulndb.LookupByKeyword(svc.Product, svc.Version, cfg.MinCVSS, cfg.NVDKey)
-			}
-			sv.CVEs = cves
+				if len(cves) == 0 {
+					cves, _ = vulndb.LookupByKeyword(svc.Product, svc.Version, cfg.MinCVSS, cfg.NVDKey)
+				}
+				sv.CVEs = cves
 
-			// Phase 3: Exploit correlation
-			if !cfg.SkipExploits && (svc.Product != "") {
-				sv.Exploits, _ = exploits.SearchByProduct(svc.Product, svc.Version)
+				// Phase 3: Exploit correlation
+				if !cfg.SkipExploits {
+					sv.Exploits, _ = exploits.SearchByProduct(svc.Product, svc.Version)
+				}
+
+				// Store in cache
+				cache[cacheKey] = sv
+
+				// Rate-limit NVD API only on cache miss (when we actually made a request)
+				// Free tier: 5 req/30s without API key (~6s)
+				// With API key: 50 req/30s (~0.6s)
+				if cfg.NVDKey != "" {
+					time.Sleep(600 * time.Millisecond)
+				} else {
+					time.Sleep(6 * time.Second)
+				}
 			}
 
 			vulnCount := len(sv.CVEs)
@@ -114,16 +140,7 @@ func RunChain(cfg ScanConfig) error {
 				color.Green(" clean\n")
 			}
 
-			// Rate-limit NVD API
-			// Free tier: 5 req/30s without API key (~6s)
-			// With API key: 50 req/30s (~0.6s)
-			if cfg.NVDKey != "" {
-				time.Sleep(600 * time.Millisecond)
-			} else {
-				time.Sleep(6 * time.Second)
-			}
-
-			hr.VulnMap[key] = sv
+			hr.VulnMap[portKey] = sv
 		}
 
 		report.Hosts = append(report.Hosts, hr)
