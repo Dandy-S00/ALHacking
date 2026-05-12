@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fatih/color"
@@ -15,6 +16,13 @@ import (
 const (
 	nvdBaseURL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 	userAgent  = "netchian/1.0 (ALHacking security research)"
+)
+
+var (
+	// nvdCache stores raw API responses to avoid redundant network calls.
+	nvdCache sync.Map
+	// httpClient is shared to enable TCP connection reuse.
+	httpClient = &http.Client{Timeout: 15 * time.Second}
 )
 
 // CVE holds structured vulnerability data from NVD.
@@ -52,7 +60,19 @@ func LookupByKeyword(product, version string, minCVSS float64, apiKey string) ([
 func queryNVD(params url.Values, minCVSS float64, apiKey string) ([]CVE, error) {
 	reqURL := fmt.Sprintf("%s?%s", nvdBaseURL, params.Encode())
 
-	client := &http.Client{Timeout: 15 * time.Second}
+	// Check cache first
+	if val, ok := nvdCache.Load(reqURL); ok {
+		return parseNVDResponse(val.([]byte), minCVSS)
+	}
+
+	// Rate-limit only when performing a real network request.
+	// Free tier: 5 req/30s without API key (~6s). With API key: 50 req/30s (~0.6s).
+	if apiKey != "" {
+		time.Sleep(600 * time.Millisecond)
+	} else {
+		time.Sleep(6 * time.Second)
+	}
+
 	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
 		return nil, err
@@ -62,7 +82,7 @@ func queryNVD(params url.Values, minCVSS float64, apiKey string) ([]CVE, error) 
 		req.Header.Set("apiKey", apiKey)
 	}
 
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("NVD API request failed: %w", err)
 	}
@@ -80,13 +100,16 @@ func queryNVD(params url.Values, minCVSS float64, apiKey string) ([]CVE, error) 
 		return nil, err
 	}
 
+	// Store raw response in cache
+	nvdCache.Store(reqURL, body)
+
 	return parseNVDResponse(body, minCVSS)
 }
 
 type nvdResponse struct {
 	Vulnerabilities []struct {
 		CVE struct {
-			ID          string `json:"id"`
+			ID           string `json:"id"`
 			Descriptions []struct {
 				Lang  string `json:"lang"`
 				Value string `json:"value"`
