@@ -220,7 +220,8 @@ func printJSON(report ChainReport, savePath string) {
 	}
 
 	if savePath != "" {
-		if err := os.WriteFile(savePath, data, 0644); err != nil {
+		// Harden file permissions (0600) to restrict access to the owner
+		if err := os.WriteFile(savePath, data, 0600); err != nil {
 			color.Red("Failed to write report to %s: %v", savePath, err)
 		} else {
 			color.Green("\n✓ Report saved to: %s\n", savePath)
@@ -285,7 +286,8 @@ func printMarkdown(report ChainReport, savePath string) {
 
 	content := sb.String()
 	if savePath != "" {
-		if err := os.WriteFile(savePath, []byte(content), 0644); err != nil {
+		// Harden file permissions (0600) to restrict access to the owner
+		if err := os.WriteFile(savePath, []byte(content), 0600); err != nil {
 			color.Red("Failed to write markdown: %v", err)
 		} else {
 			color.Green("\n✓ Markdown report saved to: %s\n", savePath)
