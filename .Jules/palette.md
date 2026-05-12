@@ -1,0 +1,3 @@
+## 2026-05-12 - Improving Scan Feedback and Result Summarization
+**Learning:** In CLI tools performing long-running operations like network scans, users often feel "blind" when certain items are skipped without explanation. Providing explicit feedback on why a service was skipped (e.g., missing version info) reduces confusion. Additionally, an aggregated summary at the end of a long output provides immediate value and actionable next steps (like using searchsploit) that might otherwise be buried in the logs.
+**Action:** Always include a summary block for batch operations and provide "skip reasons" for items that don't meet processing criteria.
