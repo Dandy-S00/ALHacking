@@ -114,15 +114,6 @@ func RunChain(cfg ScanConfig) error {
 				color.Green(" clean\n")
 			}
 
-			// Rate-limit NVD API
-			// Free tier: 5 req/30s without API key (~6s)
-			// With API key: 50 req/30s (~0.6s)
-			if cfg.NVDKey != "" {
-				time.Sleep(600 * time.Millisecond)
-			} else {
-				time.Sleep(6 * time.Second)
-			}
-
 			hr.VulnMap[key] = sv
 		}
 
