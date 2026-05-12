@@ -83,6 +83,7 @@ func RunChain(cfg ScanConfig) error {
 			sv := ServiceVulns{Service: svc}
 
 			if svc.Product == "" {
+				color.Yellow("  → %s [unknown service]... skipped (no version info)\n", key)
 				continue
 			}
 
@@ -142,8 +143,37 @@ func RunChain(cfg ScanConfig) error {
 		}
 	}
 
-	color.Cyan("\nCompleted in %s\n", time.Since(startTime).Round(time.Second))
+	printSummary(report, time.Since(startTime))
 	return nil
+}
+
+func printSummary(report ChainReport, duration time.Duration) {
+	var totalCVEs int
+	var totalExploits int
+	uniqueCVEs := make(map[string]bool)
+
+	for _, hr := range report.Hosts {
+		for _, sv := range hr.VulnMap {
+			totalExploits += len(sv.Exploits)
+			for _, cve := range sv.CVEs {
+				uniqueCVEs[cve.ID] = true
+			}
+		}
+	}
+	totalCVEs = len(uniqueCVEs)
+
+	color.Cyan("\n══════════════════════════════════════════════════════")
+	color.Cyan("  SCAN SUMMARY")
+	color.White("  Duration       : %s", duration.Round(time.Second))
+	color.White("  Hosts Found    : %d", len(report.Hosts))
+	color.White("  Vulnerabilities: %d unique CVE(s)", totalCVEs)
+	color.White("  Exploits Found : %d total EDB matches", totalExploits)
+
+	if totalExploits > 0 {
+		fmt.Println()
+		color.Yellow("  💡 TIP: Use 'searchsploit -x <EDB-ID>' to examine exploit code.")
+	}
+	color.Cyan("══════════════════════════════════════════════════════\n")
 }
 
 // ─── Table Output ─────────────────────────────────────────────────────────────
@@ -160,8 +190,7 @@ func printTable(report ChainReport) {
 		}
 		color.New(color.FgCyan, color.Bold).Printf("┌─ HOST: %s", label)
 		if h.OS != "" {
-			color.CyanString(" | OS: %s", h.OS)
-			fmt.Printf("  OS: %s", h.OS)
+			color.New(color.FgCyan, color.Bold).Printf(" | OS: %s", h.OS)
 		}
 		fmt.Println()
 
