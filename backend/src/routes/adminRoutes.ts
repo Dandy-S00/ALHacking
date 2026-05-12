@@ -1,0 +1,10 @@
+import express from 'express';
+import { createPlayer, updatePlayerBalance, getAllPlayers, getTransactions } from '../controllers/adminController';
+import { authenticateToken, isAdmin } from '../middleware/auth';
+const router = express.Router();
+router.use(authenticateToken, isAdmin);
+router.post('/players', createPlayer);
+router.post('/balance', updatePlayerBalance);
+router.get('/players', getAllPlayers);
+router.get('/transactions', getTransactions);
+export default router;
