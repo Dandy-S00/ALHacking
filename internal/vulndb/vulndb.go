@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fatih/color"
@@ -15,6 +16,17 @@ import (
 const (
 	nvdBaseURL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 	userAgent  = "netchian/1.0 (ALHacking security research)"
+)
+
+var (
+	// sharedClient enables TCP connection reuse for performance.
+	sharedClient = &http.Client{
+		Timeout: 15 * time.Second,
+	}
+
+	// cveCache stores results of NVD lookups to avoid redundant API calls.
+	// Key: string (query params + minCVSS), Value: []CVE
+	cveCache sync.Map
 )
 
 // CVE holds structured vulnerability data from NVD.
@@ -50,9 +62,13 @@ func LookupByKeyword(product, version string, minCVSS float64, apiKey string) ([
 }
 
 func queryNVD(params url.Values, minCVSS float64, apiKey string) ([]CVE, error) {
+	cacheKey := fmt.Sprintf("%s|%.1f", params.Encode(), minCVSS)
+	if val, ok := cveCache.Load(cacheKey); ok {
+		return val.([]CVE), nil
+	}
+
 	reqURL := fmt.Sprintf("%s?%s", nvdBaseURL, params.Encode())
 
-	client := &http.Client{Timeout: 15 * time.Second}
 	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
 		return nil, err
@@ -62,7 +78,7 @@ func queryNVD(params url.Values, minCVSS float64, apiKey string) ([]CVE, error) 
 		req.Header.Set("apiKey", apiKey)
 	}
 
-	resp, err := client.Do(req)
+	resp, err := sharedClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("NVD API request failed: %w", err)
 	}
@@ -80,7 +96,20 @@ func queryNVD(params url.Values, minCVSS float64, apiKey string) ([]CVE, error) 
 		return nil, err
 	}
 
-	return parseNVDResponse(body, minCVSS)
+	cves, err := parseNVDResponse(body, minCVSS)
+	if err == nil {
+		cveCache.Store(cacheKey, cves)
+
+		// Rate-limit NVD API only on cache miss to optimize performance.
+		// Free tier: 5 req/30s without API key (~6s delay)
+		// With API key: 50 req/30s (~0.6s delay)
+		if apiKey != "" {
+			time.Sleep(600 * time.Millisecond)
+		} else {
+			time.Sleep(6 * time.Second)
+		}
+	}
+	return cves, err
 }
 
 type nvdResponse struct {
