@@ -61,6 +61,7 @@ func RunChain(cfg ScanConfig) error {
 
 	if len(hosts) == 0 {
 		color.Yellow("\nNo live hosts found on %s\n", cfg.Target)
+		color.White("Tip: Try a different IP range or check your connection/privileges (SYN scan requires root).\n")
 		return nil
 	}
 
@@ -111,7 +112,7 @@ func RunChain(cfg ScanConfig) error {
 			if vulnCount > 0 || exploitCount > 0 {
 				color.Red(" %d CVE(s) | %d exploit(s)\n", vulnCount, exploitCount)
 			} else {
-				color.Green(" clean\n")
+				color.Green(" ✓ clean\n")
 			}
 
 			// Rate-limit NVD API
@@ -152,6 +153,9 @@ func printTable(report ChainReport) {
 	color.Cyan("\n[PHASE 3] Exploit Chain Report\n")
 	color.Cyan("Target: %s | Hosts: %d\n\n", report.Target, len(report.Hosts))
 
+	totalCVEs := 0
+	totalExploits := 0
+
 	for _, hr := range report.Hosts {
 		h := hr.Host
 		label := h.IP
@@ -160,8 +164,7 @@ func printTable(report ChainReport) {
 		}
 		color.New(color.FgCyan, color.Bold).Printf("┌─ HOST: %s", label)
 		if h.OS != "" {
-			color.CyanString(" | OS: %s", h.OS)
-			fmt.Printf("  OS: %s", h.OS)
+			color.New(color.FgCyan, color.Bold).Printf(" | OS: %s", h.OS)
 		}
 		fmt.Println()
 
@@ -169,6 +172,9 @@ func printTable(report ChainReport) {
 			svc := sv.Service
 			svcLabel := fmt.Sprintf("  %d/%s  %s %s", svc.Port, svc.Protocol, svc.Product, svc.Version)
 			color.New(color.FgWhite, color.Bold).Println(svcLabel)
+
+			totalCVEs += len(sv.CVEs)
+			totalExploits += len(sv.Exploits)
 
 			if len(sv.CVEs) > 0 {
 				tbl := table.New("  CVE ID", "CVSS", "Published", "Description")
@@ -208,6 +214,11 @@ func printTable(report ChainReport) {
 			fmt.Println()
 		}
 	}
+
+	color.Cyan("\n════════════════ SCAN SUMMARY ══════════════════\n")
+	color.Cyan("  Hosts: %d  |  CVEs: %d  |  Exploits: %d\n", len(report.Hosts), totalCVEs, totalExploits)
+	color.White("\n  Tip: Use 'searchsploit -x [EDB-ID]' to examine exploit code details.\n")
+	color.Cyan("════════════════════════════════════════════════\n")
 }
 
 // ─── JSON Output ──────────────────────────────────────────────────────────────
