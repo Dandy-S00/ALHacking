@@ -57,7 +57,12 @@ export default function App() {
           <Text style={styles.title}>LONE★STAR LUCK</Text>
           <TextInput placeholder="Username" style={styles.input} placeholderTextColor="#666" />
           <TextInput placeholder="Password" style={styles.input} secureTextEntry placeholderTextColor="#666" />
-          <TouchableOpacity style={styles.goldButton} onPress={() => setToken('demo')}>
+          <TouchableOpacity
+            style={styles.goldButton}
+            onPress={() => setToken('demo')}
+            accessibilityLabel="Enter Lobby"
+            accessibilityRole="button"
+          >
             <Text style={styles.goldButtonText}>ENTER LOBBY</Text>
           </TouchableOpacity>
         </View>
@@ -75,7 +80,12 @@ export default function App() {
             <Text style={styles.balanceText}>{user.balance.toFixed(2)}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.vaultBtn} onPress={() => setVaultModal(true)}>
+        <TouchableOpacity
+          style={styles.vaultBtn}
+          onPress={() => setVaultModal(true)}
+          accessibilityLabel={`Vault balance: ${user.vault} dollars`}
+          accessibilityRole="button"
+        >
           <Archive size={20} color="white" />
           <Text style={styles.vaultText}>VAULT: ${user.vault}</Text>
         </TouchableOpacity>
@@ -140,14 +150,29 @@ export default function App() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('lobby')}>
-            <Grid size={24} color={activeTab === 'lobby' ? LONE_STAR_GOLD : '#888'}/>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setActiveTab('lobby')}
+          accessibilityLabel="Go to Lobby"
+          accessibilityRole="button"
+        >
+          <Grid size={24} color={activeTab === 'lobby' ? LONE_STAR_GOLD : '#888'} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('profile')}>
-            <Settings size={24} color={activeTab === 'profile' ? LONE_STAR_GOLD : '#888'}/>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setActiveTab('profile')}
+          accessibilityLabel="Go to Profile Settings"
+          accessibilityRole="button"
+        >
+          <Settings size={24} color={activeTab === 'profile' ? LONE_STAR_GOLD : '#888'} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setToken(null)}>
-            <LogOut size={24} color="#888"/>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setToken(null)}
+          accessibilityLabel="Logout"
+          accessibilityRole="button"
+        >
+          <LogOut size={24} color="#888" />
         </TouchableOpacity>
       </View>
 
