@@ -22,8 +22,11 @@ function App() {
   const fetchData = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const playersRes = await axios.get(`${API_URL}/admin/players`, config);
-      const transRes = await axios.get(`${API_URL}/admin/transactions`, config);
+      // ⚡ Bolt: Parallelize requests to reduce total loading time from sum of requests to max duration of a single request.
+      const [playersRes, transRes] = await Promise.all([
+        axios.get(`${API_URL}/admin/players`, config),
+        axios.get(`${API_URL}/admin/transactions`, config),
+      ]);
       setPlayers(playersRes.data);
       setTransactions(transRes.data);
     } catch (err) {
