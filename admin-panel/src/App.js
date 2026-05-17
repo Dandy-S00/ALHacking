@@ -99,7 +99,13 @@ function App() {
     <div style={{ backgroundColor: '#121212', minHeight: '100vh', color: '#e0e0e0', fontFamily: 'sans-serif', padding: '2rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid #333', paddingBottom: '1rem' }}>
         <h1 style={{ color: '#d4af37' }}>LoneStar Luck <span style={{ color: '#888', fontSize: '0.8rem' }}>ADMIN PORTAL</span></h1>
-        <button onClick={handleLogout} style={{ backgroundColor: 'transparent', color: '#888', border: '1px solid #333', padding: '5px 15px', cursor: 'pointer' }}><LogOut size={16} /></button>
+        <button
+          onClick={handleLogout}
+          aria-label="Logout"
+          style={{ backgroundColor: 'transparent', color: '#888', border: '1px solid #333', padding: '5px 15px', cursor: 'pointer' }}
+        >
+          <LogOut size={16} />
+        </button>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
