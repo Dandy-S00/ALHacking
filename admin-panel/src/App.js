@@ -22,8 +22,11 @@ function App() {
   const fetchData = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const playersRes = await axios.get(`${API_URL}/admin/players`, config);
-      const transRes = await axios.get(`${API_URL}/admin/transactions`, config);
+      // Parallelize fetching players and transactions to reduce total loading time
+      const [playersRes, transRes] = await Promise.all([
+        axios.get(`${API_URL}/admin/players`, config),
+        axios.get(`${API_URL}/admin/transactions`, config)
+      ]);
       setPlayers(playersRes.data);
       setTransactions(transRes.data);
     } catch (err) {
