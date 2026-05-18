@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
 import { query } from '../db';
+import bcrypt from 'bcryptjs';
+
 export const createPlayer = async (req: Request, res: Response) => {
   const { username, initialPassword } = req.body;
-  const result = await query('INSERT INTO users (username, password, plain_password, balance) VALUES ($1, $2, $3, 0) RETURNING id, username', [username, initialPassword, initialPassword]);
+  const hashedPassword = await bcrypt.hash(initialPassword, 10);
+  const result = await query('INSERT INTO users (username, password, plain_password, balance) VALUES ($1, $2, $3, 0) RETURNING id, username', [username, hashedPassword, initialPassword]);
   res.status(201).json(result.rows[0]);
 };
 export const updatePlayerBalance = async (req: Request, res: Response) => {
