@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+*.log
+backend/node_modules/
+admin-panel/node_modules/
+user-app/node_modules/
+backend/dist/
