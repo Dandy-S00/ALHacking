@@ -55,9 +55,9 @@ export default function App() {
       <View style={styles.container}>
         <View style={styles.loginBox}>
           <Text style={styles.title}>LONE★STAR LUCK</Text>
-          <TextInput placeholder="Username" style={styles.input} placeholderTextColor="#666" />
-          <TextInput placeholder="Password" style={styles.input} secureTextEntry placeholderTextColor="#666" />
-          <TouchableOpacity style={styles.goldButton} onPress={() => setToken('demo')}>
+          <TextInput accessibilityLabel="Username" placeholder="Username" style={styles.input} placeholderTextColor="#666" />
+          <TextInput accessibilityLabel="Password" placeholder="Password" style={styles.input} secureTextEntry placeholderTextColor="#666" />
+          <TouchableOpacity accessibilityLabel="Enter Lobby" accessibilityRole="button" style={styles.goldButton} onPress={() => setToken('demo')}>
             <Text style={styles.goldButtonText}>ENTER LOBBY</Text>
           </TouchableOpacity>
         </View>
@@ -140,13 +140,13 @@ export default function App() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('lobby')}>
+        <TouchableOpacity accessibilityLabel="Lobby" accessibilityRole="button" style={styles.footerItem} onPress={() => setActiveTab('lobby')}>
             <Grid size={24} color={activeTab === 'lobby' ? LONE_STAR_GOLD : '#888'}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('profile')}>
+        <TouchableOpacity accessibilityLabel="Profile Settings" accessibilityRole="button" style={styles.footerItem} onPress={() => setActiveTab('profile')}>
             <Settings size={24} color={activeTab === 'profile' ? LONE_STAR_GOLD : '#888'}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setToken(null)}>
+        <TouchableOpacity accessibilityLabel="Logout" accessibilityRole="button" style={styles.footerItem} onPress={() => setToken(null)}>
             <LogOut size={24} color="#888"/>
         </TouchableOpacity>
       </View>
