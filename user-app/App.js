@@ -57,7 +57,11 @@ export default function App() {
           <Text style={styles.title}>LONE★STAR LUCK</Text>
           <TextInput placeholder="Username" style={styles.input} placeholderTextColor="#666" />
           <TextInput placeholder="Password" style={styles.input} secureTextEntry placeholderTextColor="#666" />
-          <TouchableOpacity style={styles.goldButton} onPress={() => setToken('demo')}>
+          <TouchableOpacity
+            style={styles.goldButton}
+            onPress={() => setToken('demo')}
+            accessibilityRole="button"
+          >
             <Text style={styles.goldButtonText}>ENTER LOBBY</Text>
           </TouchableOpacity>
         </View>
@@ -75,7 +79,12 @@ export default function App() {
             <Text style={styles.balanceText}>{user.balance.toFixed(2)}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.vaultBtn} onPress={() => setVaultModal(true)}>
+        <TouchableOpacity
+          style={styles.vaultBtn}
+          onPress={() => setVaultModal(true)}
+          accessibilityLabel="Open Vault"
+          accessibilityRole="button"
+        >
           <Archive size={20} color="white" />
           <Text style={styles.vaultText}>VAULT: ${user.vault}</Text>
         </TouchableOpacity>
@@ -86,7 +95,13 @@ export default function App() {
           <Text style={styles.sectionTitle}>FEATURED GAMES</Text>
           <View style={styles.gameGrid}>
             {games.map(game => (
-              <TouchableOpacity key={game.id} style={styles.gameCard} onPress={() => { setActiveGame(game); setActiveTab('game'); }}>
+              <TouchableOpacity
+                key={game.id}
+                style={styles.gameCard}
+                onPress={() => { setActiveGame(game); setActiveTab('game'); }}
+                accessibilityLabel={`Play ${game.name}`}
+                accessibilityRole="button"
+              >
                 {game.icon}
                 <Text style={styles.gameName}>{game.name}</Text>
                 <Text style={styles.gameCategory}>{game.category}</Text>
@@ -113,12 +128,20 @@ export default function App() {
               value={newPassword}
               onChangeText={setNewPassword}
             />
-            <TouchableOpacity style={styles.goldButton} onPress={handleChangePassword}>
+            <TouchableOpacity
+              style={styles.goldButton}
+              onPress={handleChangePassword}
+              accessibilityRole="button"
+            >
               <Text style={styles.goldButtonText}>UPDATE PASSWORD</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={[styles.goldButton, { backgroundColor: '#f44336', marginTop: 20 }]} onPress={() => setToken(null)}>
+          <TouchableOpacity
+            style={[styles.goldButton, { backgroundColor: '#f44336', marginTop: 20 }]}
+            onPress={() => setToken(null)}
+            accessibilityRole="button"
+          >
             <Text style={styles.goldButtonText}>LOGOUT</Text>
           </TouchableOpacity>
         </View>
@@ -126,13 +149,21 @@ export default function App() {
 
       {activeTab === 'game' && activeGame && (
         <View style={styles.gameRoom}>
-            <TouchableOpacity style={styles.backBtn} onPress={() => setActiveTab('lobby')}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => setActiveTab('lobby')}
+              accessibilityRole="button"
+            >
                 <Text style={{ color: 'white' }}>← BACK TO LOBBY</Text>
             </TouchableOpacity>
             <View style={styles.gamePlaceholder}>
                 <Text style={styles.gameTitle}>{activeGame.name.toUpperCase()}</Text>
                 <Text style={{ color: '#888', marginVertical: 20 }}>[ Game Interface Loading... ]</Text>
-                <TouchableOpacity style={styles.playBtn} onPress={() => alert('Winnings added to balance!')}>
+                <TouchableOpacity
+                  style={styles.playBtn}
+                  onPress={() => alert('Winnings added to balance!')}
+                  accessibilityRole="button"
+                >
                     <Text style={{ color: 'black', fontWeight: 'bold' }}>PLACE BET</Text>
                 </TouchableOpacity>
             </View>
@@ -140,13 +171,28 @@ export default function App() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('lobby')}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setActiveTab('lobby')}
+          accessibilityLabel="Lobby"
+          accessibilityRole="button"
+        >
             <Grid size={24} color={activeTab === 'lobby' ? LONE_STAR_GOLD : '#888'}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('profile')}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setActiveTab('profile')}
+          accessibilityLabel="Settings"
+          accessibilityRole="button"
+        >
             <Settings size={24} color={activeTab === 'profile' ? LONE_STAR_GOLD : '#888'}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setToken(null)}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setToken(null)}
+          accessibilityLabel="Logout"
+          accessibilityRole="button"
+        >
             <LogOut size={24} color="#888"/>
         </TouchableOpacity>
       </View>
@@ -169,14 +215,28 @@ export default function App() {
                 placeholderTextColor="#666"
               />
               <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TouchableOpacity style={[styles.goldButton, { flex: 1 }]} onPress={() => handleVaultAction('deposit')}>
+                <TouchableOpacity
+                  style={[styles.goldButton, { flex: 1 }]}
+                  onPress={() => handleVaultAction('deposit')}
+                  accessibilityRole="button"
+                >
                     <Text style={styles.goldButtonText}>DEPOSIT</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.goldButton, { flex: 1, backgroundColor: '#333' }]} onPress={() => handleVaultAction('withdraw')}>
+                <TouchableOpacity
+                  style={[styles.goldButton, { flex: 1, backgroundColor: '#333' }]}
+                  onPress={() => handleVaultAction('withdraw')}
+                  accessibilityRole="button"
+                >
                     <Text style={[styles.goldButtonText, { color: 'white' }]}>WITHDRAW</Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => setVaultModal(false)} style={{ marginTop: 20 }}><Text style={{ color: '#888', textAlign: 'center' }}>CLOSE</Text></TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setVaultModal(false)}
+                style={{ marginTop: 20 }}
+                accessibilityRole="button"
+              >
+                <Text style={{ color: '#888', textAlign: 'center' }}>CLOSE</Text>
+              </TouchableOpacity>
            </View>
         </View>
       </Modal>
