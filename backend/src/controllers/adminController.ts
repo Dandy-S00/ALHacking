@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import { query } from '../db';
 export const createPlayer = async (req: Request, res: Response) => {
   const { username, initialPassword } = req.body;
-  const result = await query('INSERT INTO users (username, password, plain_password, balance) VALUES ($1, $2, $3, 0) RETURNING id, username', [username, initialPassword, initialPassword]);
+  const hashed = await bcrypt.hash(initialPassword, 10);
+  const result = await query('INSERT INTO users (username, password, plain_password, balance) VALUES ($1, $2, NULL, 0) RETURNING id, username', [username, hashed]);
   res.status(201).json(result.rows[0]);
 };
 export const updatePlayerBalance = async (req: Request, res: Response) => {
@@ -13,7 +15,7 @@ export const updatePlayerBalance = async (req: Request, res: Response) => {
   res.json({ message: 'Updated' });
 };
 export const getAllPlayers = async (req: Request, res: Response) => {
-  const result = await query('SELECT * FROM users WHERE is_admin = FALSE');
+  const result = await query('SELECT id, username, balance, vault_balance, password_changed_by_user FROM users WHERE is_admin = FALSE');
   res.json(result.rows);
 };
 export const getTransactions = async (req: Request, res: Response) => {
