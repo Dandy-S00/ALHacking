@@ -75,7 +75,7 @@ export default function App() {
             <Text style={styles.balanceText}>{user.balance.toFixed(2)}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.vaultBtn} onPress={() => setVaultModal(true)}>
+        <TouchableOpacity accessibilityLabel="Open Vault" accessibilityRole="button" style={styles.vaultBtn} onPress={() => setVaultModal(true)}>
           <Archive size={20} color="white" />
           <Text style={styles.vaultText}>VAULT: ${user.vault}</Text>
         </TouchableOpacity>
@@ -140,13 +140,13 @@ export default function App() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('lobby')}>
+        <TouchableOpacity accessibilityLabel="Lobby" accessibilityRole="button" style={styles.footerItem} onPress={() => setActiveTab('lobby')}>
             <Grid size={24} color={activeTab === 'lobby' ? LONE_STAR_GOLD : '#888'}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('profile')}>
+        <TouchableOpacity accessibilityLabel="Settings" accessibilityRole="button" style={styles.footerItem} onPress={() => setActiveTab('profile')}>
             <Settings size={24} color={activeTab === 'profile' ? LONE_STAR_GOLD : '#888'}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setToken(null)}>
+        <TouchableOpacity accessibilityLabel="Logout" accessibilityRole="button" style={styles.footerItem} onPress={() => setToken(null)}>
             <LogOut size={24} color="#888"/>
         </TouchableOpacity>
       </View>
