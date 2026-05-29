@@ -4,6 +4,22 @@ import { Users, DollarSign, Archive, LogOut, ChevronRight, Play, TrendingUp, Gri
 
 const LONE_STAR_GOLD = '#d4af37';
 
+// Optimization: Move static games list outside of component to prevent re-allocation on every render.
+const GAMES = [
+  { id: 'slots_neon', name: 'Neon Nights', category: 'Slots', theme: 'Neon', icon: <Grid color={LONE_STAR_GOLD} /> },
+  { id: 'slots_oil', name: 'Oil Tycoon', category: 'Slots', theme: 'Texas', icon: <Grid color={LONE_STAR_GOLD} /> },
+  { id: 'slots_alamo', name: 'Alamo Riches', category: 'Slots', theme: 'Texas', icon: <Grid color={LONE_STAR_GOLD} /> },
+  { id: 'slots_blue', name: 'Bluebonnet Spins', category: 'Slots', theme: 'Texas', icon: <Grid color={LONE_STAR_GOLD} /> },
+  { id: 'slots_ranch', name: 'Ranch Hand', category: 'Slots', theme: 'Texas', icon: <Grid color={LONE_STAR_GOLD} /> },
+  { id: 'slots_cyber', name: 'Cyber Cash', category: 'Slots', theme: 'Modern', icon: <Grid color={LONE_STAR_GOLD} /> },
+  { id: 'fish_deep', name: 'Gulf Coast Gold', category: 'Fish', theme: 'Texas', icon: <Play color={LONE_STAR_GOLD} /> },
+  { id: 'fish_tank', name: 'Deep Sea Texan', category: 'Fish', theme: 'Texas', icon: <Play color={LONE_STAR_GOLD} /> },
+  { id: 'crash_turbo', name: 'Turbo Crash', category: 'Instant', icon: <TrendingUp color={LONE_STAR_GOLD} /> },
+  { id: 'mines_gem', name: 'Gem Mines', category: 'Instant', icon: <RefreshCw color={LONE_STAR_GOLD} /> },
+  { id: 'plinko', name: 'LoneStar Plinko', category: 'Instant', icon: <Grid color={LONE_STAR_GOLD} /> },
+  { id: 'roulette', name: 'Austin Roulette', category: 'Casino', icon: <RefreshCw color={LONE_STAR_GOLD} /> },
+];
+
 export default function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState({ username: 'LuckyTexan', balance: 100, vault: 50 });
@@ -12,21 +28,6 @@ export default function App() {
   const [vaultModal, setVaultModal] = useState(false);
   const [vaultAmount, setVaultAmount] = useState('');
   const [newPassword, setNewPassword] = useState('');
-
-  const games = [
-    { id: 'slots_neon', name: 'Neon Nights', category: 'Slots', theme: 'Neon', icon: <Grid color={LONE_STAR_GOLD} /> },
-    { id: 'slots_oil', name: 'Oil Tycoon', category: 'Slots', theme: 'Texas', icon: <Grid color={LONE_STAR_GOLD} /> },
-    { id: 'slots_alamo', name: 'Alamo Riches', category: 'Slots', theme: 'Texas', icon: <Grid color={LONE_STAR_GOLD} /> },
-    { id: 'slots_blue', name: 'Bluebonnet Spins', category: 'Slots', theme: 'Texas', icon: <Grid color={LONE_STAR_GOLD} /> },
-    { id: 'slots_ranch', name: 'Ranch Hand', category: 'Slots', theme: 'Texas', icon: <Grid color={LONE_STAR_GOLD} /> },
-    { id: 'slots_cyber', name: 'Cyber Cash', category: 'Slots', theme: 'Modern', icon: <Grid color={LONE_STAR_GOLD} /> },
-    { id: 'fish_deep', name: 'Gulf Coast Gold', category: 'Fish', theme: 'Texas', icon: <Play color={LONE_STAR_GOLD} /> },
-    { id: 'fish_tank', name: 'Deep Sea Texan', category: 'Fish', theme: 'Texas', icon: <Play color={LONE_STAR_GOLD} /> },
-    { id: 'crash_turbo', name: 'Turbo Crash', category: 'Instant', icon: <TrendingUp color={LONE_STAR_GOLD} /> },
-    { id: 'mines_gem', name: 'Gem Mines', category: 'Instant', icon: <RefreshCw color={LONE_STAR_GOLD} /> },
-    { id: 'plinko', name: 'LoneStar Plinko', category: 'Instant', icon: <Grid color={LONE_STAR_GOLD} /> },
-    { id: 'roulette', name: 'Austin Roulette', category: 'Casino', icon: <RefreshCw color={LONE_STAR_GOLD} /> },
-  ];
 
   const handleVaultAction = (action) => {
     const amt = parseFloat(vaultAmount);
@@ -85,7 +86,7 @@ export default function App() {
         <ScrollView style={styles.lobby}>
           <Text style={styles.sectionTitle}>FEATURED GAMES</Text>
           <View style={styles.gameGrid}>
-            {games.map(game => (
+            {GAMES.map(game => (
               <TouchableOpacity key={game.id} style={styles.gameCard} onPress={() => { setActiveGame(game); setActiveTab('game'); }}>
                 {game.icon}
                 <Text style={styles.gameName}>{game.name}</Text>
