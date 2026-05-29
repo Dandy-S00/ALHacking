@@ -140,13 +140,28 @@ export default function App() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('lobby')}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setActiveTab('lobby')}
+          accessibilityLabel="Lobby"
+          accessibilityRole="button"
+        >
             <Grid size={24} color={activeTab === 'lobby' ? LONE_STAR_GOLD : '#888'}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setActiveTab('profile')}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setActiveTab('profile')}
+          accessibilityLabel="Settings"
+          accessibilityRole="button"
+        >
             <Settings size={24} color={activeTab === 'profile' ? LONE_STAR_GOLD : '#888'}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem} onPress={() => setToken(null)}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => setToken(null)}
+          accessibilityLabel="Logout"
+          accessibilityRole="button"
+        >
             <LogOut size={24} color="#888"/>
         </TouchableOpacity>
       </View>

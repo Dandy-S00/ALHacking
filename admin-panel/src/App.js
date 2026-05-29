@@ -82,12 +82,12 @@ function App() {
         <form onSubmit={handleLogin} style={{ backgroundColor: '#2a2a2a', padding: '2rem', borderRadius: '8px', width: '300px' }}>
           <h2 style={{ color: '#d4af37', textAlign: 'center' }}>LoneStar Admin</h2>
           <div style={{ marginBottom: '1rem' }}>
-            <label>Username</label>
-            <input type="text" value={username} onChange={e => setUsername(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px' }} />
+            <label htmlFor="username">Username</label>
+            <input id="username" type="text" value={username} onChange={e => setUsername(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px' }} />
           </div>
           <div style={{ marginBottom: '1rem' }}>
-            <label>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px' }} />
+            <label htmlFor="password">Password</label>
+            <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%', padding: '8px', marginTop: '5px' }} />
           </div>
           <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#d4af37', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Login</button>
         </form>
@@ -99,7 +99,7 @@ function App() {
     <div style={{ backgroundColor: '#121212', minHeight: '100vh', color: '#e0e0e0', fontFamily: 'sans-serif', padding: '2rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid #333', paddingBottom: '1rem' }}>
         <h1 style={{ color: '#d4af37' }}>LoneStar Luck <span style={{ color: '#888', fontSize: '0.8rem' }}>ADMIN PORTAL</span></h1>
-        <button onClick={handleLogout} style={{ backgroundColor: 'transparent', color: '#888', border: '1px solid #333', padding: '5px 15px', cursor: 'pointer' }}><LogOut size={16} /></button>
+        <button onClick={handleLogout} aria-label="Logout" style={{ backgroundColor: 'transparent', color: '#888', border: '1px solid #333', padding: '5px 15px', cursor: 'pointer' }}><LogOut size={16} /></button>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
@@ -109,7 +109,9 @@ function App() {
             <form onSubmit={createPlayer}>
               <input placeholder="Username" value={newPlayer.username} onChange={e => setNewPlayer({ ...newPlayer, username: e.target.value })} style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#333', border: 'none', color: 'white' }} />
               <input placeholder="Initial Password" value={newPlayer.password} onChange={e => setNewPlayer({ ...newPlayer, password: e.target.value })} style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#333', border: 'none', color: 'white' }} />
-              <button disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#d4af37', border: 'none', cursor: 'pointer' }}>Add Player</button>
+              <button disabled={loading} style={{ width: '100%', padding: '10px', backgroundColor: '#d4af37', border: 'none', cursor: 'pointer' }}>
+                {loading ? 'Adding...' : 'Add Player'}
+              </button>
             </form>
           </div>
 
@@ -149,11 +151,11 @@ function App() {
                     <button onClick={() => {
                       const amt = prompt('Amount to load?');
                       if (amt) adjustBalance(p.id, amt, 'load');
-                    }} style={{ background: '#4caf50', color: 'white', border: 'none', padding: '5px', marginRight: '5px', cursor: 'pointer' }}>Load</button>
+                    }} aria-label={"Load balance for " + p.username} style={{ background: '#4caf50', color: 'white', border: 'none', padding: '5px', marginRight: '5px', cursor: 'pointer' }}>Load</button>
                     <button onClick={() => {
                       const amt = prompt('Amount to cash out?');
                       if (amt) adjustBalance(p.id, amt, 'cashout');
-                    }} style={{ background: '#f44336', color: 'white', border: 'none', padding: '5px', cursor: 'pointer' }}>Cashout</button>
+                    }} aria-label={"Cash out for " + p.username} style={{ background: '#f44336', color: 'white', border: 'none', padding: '5px', cursor: 'pointer' }}>Cashout</button>
                   </td>
                 </tr>
               ))}
