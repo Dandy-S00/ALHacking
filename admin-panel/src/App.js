@@ -136,7 +136,7 @@ function App() {
                 <th style={{ padding: '10px' }}>Username</th>
                 <th>Balance</th>
                 <th>Vault</th>
-                <th>Password (Admin View)</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -146,7 +146,9 @@ function App() {
                   <td style={{ padding: '10px' }}>{p.username}</td>
                   <td>${p.balance}</td>
                   <td>${p.vault_balance}</td>
-                  <td style={{ color: p.password_changed_by_user ? '#ff9800' : '#888' }}>{p.plain_password} {p.password_changed_by_user && '(User Changed)'}</td>
+                  <td style={{ color: p.password_changed_by_user ? '#ff9800' : '#888' }}>
+                    {p.plain_password ? 'Plaintext (Needs Migration)' : 'Secure (Hashed)'}
+                  </td>
                   <td>
                     <button onClick={() => {
                       const amt = prompt('Amount to load?');
