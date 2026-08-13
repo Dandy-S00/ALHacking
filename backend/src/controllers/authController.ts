@@ -6,7 +6,14 @@ export const login = async (req: Request, res: Response) => {
   const result = await query('SELECT * FROM users WHERE username = $1', [username]);
   const user = result.rows[0];
   if (!user || password !== user.plain_password) return res.status(401).json({ message: 'Invalid credentials' });
-  const token = jwt.sign({ id: user.id, username: user.username, isAdmin: user.is_admin }, process.env.JWT_SECRET || 'lone_star_secret');
+
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error('JWT_SECRET is not defined');
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+
+  const token = jwt.sign({ id: user.id, username: user.username, isAdmin: user.is_admin }, secret);
   res.json({ token, user: { id: user.id, username: user.username, balance: user.balance, vaultBalance: user.vault_balance, isAdmin: user.is_admin } });
 };
 export const changePassword = async (req: any, res: Response) => {
